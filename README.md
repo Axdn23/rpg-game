@@ -1,2 +1,35 @@
-# rpg-game
-Wave-based RPG game with 4 classes, skill system, and progression mechanics
+# Wavebreaker RPG
+
+간단한 2D 액션 RPG 프로토타입입니다. 브라우저에서 `index.html`을 열면 바로 실행됩니다.
+
+## 실행 방법
+
+1. 브라우저에서 `index.html` 파일을 엽니다.
+2. 직업을 선택합니다.
+3. 이동: WASD / 화살표 키
+4. 공격: Space
+5. 스킬: Z / X / C / V
+6. 몬스터 처치 후 드롭되는 경험치로 스킬과 스탯을 업그레이드합니다.
+
+## 포함 기능
+
+- 4개의 직업: Knight, Mage, Ranger, Rogue
+- 각 직업별 4개 스킬
+- 기본 공격과 스킬 키 입력
+- WASD/화살표 이동 및 한 방향 연타 대시
+- 웨이브 증가에 따른 적 강화
+- 4웨이브마다 보스 등장
+- 경험치 드롭 및 업그레이드 상점
+
+## 게임 조작
+
+- 이동: WASD / 화살표
+- 기본 공격: Space
+- 스킬: Z, X, C, V
+- 대시: 같은 방향으로 연속 이동
+- 재시작: 게임 오버 후 R
+
+## 참고
+
+이 프로젝트는 HTML5 Canvas 기반으로 구현되어 있으며, 추가 리소스 없이 바로 실행할 수 있습니다.
+

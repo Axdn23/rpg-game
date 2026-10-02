@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wavebreaker RPG</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="top-bar">
+      <div class="job-selection">
+        <button class="job-card selected" data-job="knight">
+          <span class="job-name">Knight</span>
+          <small>전사</small>
+        </button>
+        <button class="job-card" data-job="mage">
+          <span class="job-name">Mage</span>
+          <small>마법사</small>
+        </button>
+        <button class="job-card" data-job="ranger">
+          <span class="job-name">Ranger</span>
+          <small>궁수</small>
+        </button>
+        <button class="job-card" data-job="rogue">
+          <span class="job-name">Rogue</span>
+          <small>도적</small>
+        </button>
+      </div>
+
+      <div class="status-panel">
+        <div><span>웨이브</span><strong id="waveValue">1</strong></div>
+        <div><span>체력</span><strong id="hpValue">0 / 0</strong></div>
+        <div><span>경험치</span><strong id="xpValue">0</strong></div>
+        <div><span>직업</span><strong id="jobValue">Knight</strong></div>
+      </div>
+    </div>
+
+    <div class="game-layout">
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+      <aside class="shop-panel">
+        <h3>경험치 상점</h3>
+        <div class="shop-metrics">
+          <div>보유 XP: <strong id="bankValue">0</strong></div>
+          <div>스킬 레벨: <strong id="skillLevelValue">0</strong></div>
+        </div>
+
+        <div class="upgrade-list">
+          <button class="upgrade-btn" data-upgrade="hp">체력 증가</button>
+          <button class="upgrade-btn" data-upgrade="damage">공격력 증가</button>
+          <button class="upgrade-btn" data-upgrade="speed">이동 속도 증가</button>
+        </div>
+
+        <div id="skillShop" class="skill-shop"></div>
+      </aside>
+    </div>
+
+    <div class="controls-bar">
+      <div><strong>기본 공격</strong>: Space</div>
+      <div><strong>스킬</strong>: Z / X / C / V</div>
+      <div><strong>이동</strong>: WASD / 방향키</div>
+      <div><strong>대시</strong>: 한 방향 연타</div>
+    </div>
+
+    <div id="overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2>게임 오버</h2>
+        <p>R 키를 눌러 다시 시작하세요</p>
+      </div>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>

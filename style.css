@@ -1,0 +1,226 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-1: #0f172a;
+  --bg-2: #111827;
+  --panel: rgba(15, 23, 42, 0.86);
+  --panel-bright: rgba(30, 41, 59, 0.95);
+  --line: rgba(148, 163, 184, 0.28);
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #7dd3fc;
+  --gold: #fbbf24;
+  --danger: #f87171;
+  --success: #34d399;
+}
+
+html, body {
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: radial-gradient(circle at top, #162032 0%, #0b1120 45%, #070d18 100%);
+  color: var(--text);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 20px 32px;
+}
+
+.top-bar {
+  width: min(1480px, 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.job-selection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.job-card {
+  border: 1px solid var(--line);
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--text);
+  padding: 10px 18px;
+  border-radius: 12px;
+  min-width: 120px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.job-card:hover, .job-card.selected {
+  transform: translateY(-1px);
+  border-color: rgba(125, 211, 252, 0.7);
+  box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.3);
+}
+
+.job-card span {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.job-card small {
+  color: var(--muted);
+}
+
+.status-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: flex-end;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 16px;
+}
+
+.status-panel div {
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.status-panel strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.game-layout {
+  width: min(1480px, 100%);
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+#gameCanvas {
+  width: min(100%, 1280px);
+  height: auto;
+  background: linear-gradient(180deg, rgba(13, 19, 32, 0.96), rgba(15, 23, 42, 0.96));
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.45);
+}
+
+.shop-panel {
+  width: 280px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 16px;
+}
+
+.shop-panel h3 {
+  margin: 0 0 14px;
+  font-size: 1.3rem;
+}
+
+.shop-metrics {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+  color: var(--muted);
+}
+
+.upgrade-list,
+.skill-shop {
+  display: grid;
+  gap: 10px;
+}
+
+.upgrade-btn,
+.skill-btn {
+  appearance: none;
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--panel-bright);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.upgrade-btn:hover,
+.skill-btn:hover {
+  border-color: rgba(52, 211, 153, 0.7);
+  box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.2);
+}
+
+.upgrade-btn:disabled,
+.skill-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.skill-shop {
+  margin-top: 16px;
+}
+
+.controls-bar {
+  width: min(1480px, 100%);
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  background: rgba(15, 23, 42, 0.78);
+  border-radius: 12px;
+  color: var(--muted);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.65);
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-card {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px 36px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(2, 6, 23, 0.5);
+}
+
+.overlay-card h2 {
+  margin: 0 0 8px;
+  color: var(--danger);
+}
+
+.overlay-card p {
+  margin: 0;
+  color: var(--text);
+}
+
+@media (max-width: 1200px) {
+  .game-layout {
+    flex-direction: column;
+  }
+
+  .shop-panel {
+    width: 100%;
+  }
+}
