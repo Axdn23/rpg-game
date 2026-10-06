@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wavebreaker RPG</title>
+    <style>
+        * { box-sizing: border-box; }
+        :root {
+            --bg-1: #0f172a; --bg-2: #111827; --panel: rgba(15, 23, 42, 0.86);
+            --panel-bright: rgba(30, 41, 59, 0.95); --line: rgba(148, 163, 184, 0.28);
+            --text: #e2e8f0; --muted: #94a3b8; --accent: #7dd3fc; --gold: #fbbf24;
+            --danger: #f87171; --success: #34d399;
+        }
+        html, body {
+            margin: 0; width: 100%; min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at top, #162032 0%, #0b1120 45%, #070d18 100%);
+            color: var(--text);
+        }
+        body { display: flex; flex-direction: column; align-items: center; padding: 18px 20px 32px; }
+        .difficulty-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.95); z-index: 1000; }
+        .difficulty-screen.hidden { display: none; }
+        .difficulty-card { background: rgba(15, 23, 42, 0.98); border: 1px solid var(--line); border-radius: 24px; padding: 48px 56px; text-align: center; max-width: 600px; box-shadow: 0 20px 60px rgba(2, 6, 23, 0.7); }
+        .difficulty-card h1 { margin: 0 0 32px; font-size: 2.5rem; color: var(--accent); }
+        .difficulty-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .difficulty-btn { border: 2px solid var(--line); background: rgba(15, 23, 42, 0.9); color: var(--text); padding: 20px 16px; border-radius: 12px; cursor: pointer; transition: 0.3s ease; font-size: 1rem; }
+        .difficulty-btn:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.2); }
+        .difficulty-btn .diff-title { display: block; font-weight: 700; font-size: 1.2rem; margin-bottom: 8px; }
+        .difficulty-btn small { display: block; color: var(--muted); font-size: 0.85rem; }
+        .game-screen.hidden { display: none; }
+        .top-bar { width: min(1480px, 100%); display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 14px; }
+        .job-selection { display: flex; flex-wrap: wrap; gap: 10px; }
+        .job-card { border: 1px solid var(--line); background: rgba(15, 23, 42, 0.9); color: var(--text); padding: 10px 18px; border-radius: 12px; min-width: 120px; cursor: pointer; transition: 0.2s ease; }
+        .job-card:hover, .job-card.selected { transform: translateY(-1px); border-color: rgba(125, 211, 252, 0.7); box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.3); }
+        .job-card span { display: block; font-size: 1rem; font-weight: 700; }
+        .job-card small { color: var(--muted); }
+        .status-panel { display: flex; flex-wrap: wrap; gap: 14px; justify-content: flex-end; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; }
+        .status-panel div { display: flex; flex-direction: column; min-width: 110px; color: var(--muted); font-size: 0.82rem; }
+        .status-panel strong { color: var(--text); font-size: 1rem; }
+        .game-layout { width: min(1480px, 100%); display: flex; align-items: flex-start; gap: 18px; }
+        #gameCanvas { width: min(100%, 1280px); height: auto; background: linear-gradient(180deg, rgba(13, 19, 32, 0.96), rgba(15, 23, 42, 0.96)); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 24px 50px rgba(15, 23, 42, 0.45); }
+        .shop-panel { width: 280px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px 16px; max-height: 640px; overflow-y: auto; }
+        .shop-panel h3 { margin: 0 0 14px; font-size: 1.3rem; }
+        .shop-metrics { display: grid; gap: 8px; margin-bottom: 18px; color: var(--muted); }
+        .upgrade-list, .skill-shop { display: grid; gap: 10px; }
+        .upgrade-btn, .skill-btn { appearance: none; width: 100%; border: 1px solid var(--line); background: var(--panel-bright); color: var(--text); padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s ease; font-size: 0.9rem; }
+        .upgrade-btn:hover, .skill-btn:hover { border-color: rgba(52, 211, 153, 0.7); box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.2); }
+        .upgrade-btn:disabled, .skill-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .controls-bar { width: min(1480px, 100%); margin-top: 18px; display: flex; flex-wrap: wrap; gap: 18px; padding: 14px 18px; border: 1px solid var(--line); background: rgba(15, 23, 42, 0.78); border-radius: 12px; color: var(--muted); font-size: 0.9rem; }
+        .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.65); z-index: 100; }
+        .overlay.hidden { display: none; }
+        .overlay-card { background: rgba(15, 23, 42, 0.95); border: 1px solid var(--line); border-radius: 18px; padding: 28px 36px; text-align: center; box-shadow: 0 20px 40px rgba(2, 6, 23, 0.5); }
+        .overlay-card h2 { margin: 0 0 8px; color: var(--danger); }
+        .overlay-card p { margin: 0; color: var(--text); }
+        @media (max-width: 1200px) { .game-layout { flex-direction: column; } .shop-panel { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="difficultyScreen" class="difficulty-screen">
+        <div class="difficulty-card">
+            <h1>난이도 선택</h1>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn" data-difficulty="easy"><span class="diff-title">🟢 쉬움</span><small>적이 약하고 천천히</small></button>
+                <button class="difficulty-btn" data-difficulty="normal"><span class="diff-title">🟡 보통</span><small>균형잡힌 난이도</small></button>
+                <button class="difficulty-btn" data-difficulty="hard"><span class="diff-title">🔴 어려움</span><small>적이 강하고 빠름</small></button>
+                <button class="difficulty-btn" data-difficulty="extreme"><span class="diff-title">⚫ 매우어려움</span><small>극도의 도전</small></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameScreen" class="game-screen hidden">
+        <div class="top-bar">
+            <div class="job-selection">
+                <button class="job-card selected" data-job="knight"><span class="job-name">Knight</span><small>전사</small></button>
+                <button class="job-card" data-job="mage"><span class="job-name">Mage</span><small>마법사</small></button>
+                <button class="job-card" data-job="ranger"><span class="job-name">Ranger</span><small>궁수</small></button>
+                <button class="job-card" data-job="rogue"><span class="job-name">Rogue</span><small>도적</small></button>
+            </div>
+            <div class="status-panel">
+                <div><span>웨이브</span><strong id="waveValue">1</strong></div>
+                <div><span>체력</span><strong id="hpValue">0 / 0</strong></div>
+                <div><span>경험치</span><strong id="xpValue">0</strong></div>
+                <div><span>난이도</span><strong id="diffValue">보통</strong></div>
+            </div>
+        </div>
+
+        <div class="game-layout">
+            <canvas id="gameCanvas" width="1280" height="720"></canvas>
+            <aside class="shop-panel">
+                <h3>경험치 상점</h3>
+                <div class="shop-metrics">
+                    <div>보유 XP: <strong id="bankValue">0</strong></div>
+                    <div>스킬 레벨: <strong id="skillLevelValue">0</strong></div>
+                </div>
+                <div class="upgrade-list">
+                    <button class="upgrade-btn" data-upgrade="hp">체력 증가</button>
+                    <button class="upgrade-btn" data-upgrade="damage">공격력 증가</button>
+                    <button class="upgrade-btn" data-upgrade="speed">이동 속도 증가</button>
+                </div>
+                <div id="skillShop" class="skill-shop"></div>
+            </aside>
+        </div>
+
+        <div class="controls-bar">
+            <div><strong>기본 공격</strong>: Space</div>
+            <div><strong>스킬</strong>: Z / X / C / V</div>
+            <div><strong>이동</strong>: WASD / 방향키</div>
+            <div><strong>대시</strong>: 한 방향 연타</div>
+        </div>
+
+        <div id="overlay" class="overlay hidden">
+            <div class="overlay-card">
+                <h2>게임 오버</h2>
+                <p>R 키를 눌러 난이도 선택으로 돌아가세요</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const difficultyScreen = document.getElementById("difficultyScreen");
+        const gameScreen = document.getElementById("gameScreen");
+        const waveValue = document.getElementById("waveValue");
+        const hpValue = document.getElementById("hpValue");
+        const xpValue = document.getElementById("xpValue");
+        const diffValue = document.getElementById("diffValue");
+        const bankValue = document.getElementById("bankValue");
+        const skillLevelValue = document.getElementById("skillLevelValue");
+        const skillShop = document.getElementById("skillShop");
+        const overlay = document.getElementById("overlay");
+
+        const difficultySettings = {
+            easy: { label: "쉬움", hpMul: 0.6, damageMul: 0.65, speedMul: 0.75, enemyCount: 0.7 },
+            normal: { label: "보통", hpMul: 1, damageMul: 1, speedMul: 1, enemyCount: 1 },
+            hard: { label: "어려움", hpMul: 1.4, damageMul: 1.35, speedMul: 1.25, enemyCount: 1.3 },
+            extreme: { label: "매우 어려움", hpMul: 1.9, damageMul: 1.75, speedMul: 1.5, enemyCount: 1.6 }
+        };
+
+        const jobs = {
+            knight: { name: "Knight", color: "#f9c74f", speed: 3.6, hp: 150, damage: 18, skills: [
+                { key: "Z", name: "Shield Bash", type: "melee", damage: 30, range: 120, radius: 58, cooldown: 2.8, color: "#f9c74f" },
+                { key: "X", name: "Flame Slash", type: "projectile", damage: 26, speed: 8, radius: 12, cooldown: 4.3, color: "#ff7a59" },
+                { key: "C", name: "Earth Stomp", type: "aoe", damage: 34, radius: 110, cooldown: 6.3, color: "#7dd3fc" },
+                { key: "V", name: "Blade Storm", type: "cone", damage: 42, range: 150, radius: 48, cooldown: 8.2, color: "#fbbf24" }
+            ]},
+            mage: { name: "Mage", color: "#7dd3fc", speed: 3.3, hp: 120, damage: 16, skills: [
+                { key: "Z", name: "Fireball", type: "projectile", damage: 28, speed: 8.5, radius: 12, cooldown: 3.3, color: "#fb7185" },
+                { key: "X", name: "Frost Nova", type: "aoe", damage: 31, radius: 130, cooldown: 5.5, color: "#a5b4fc" },
+                { key: "C", name: "Arcane Beam", type: "beam", damage: 36, range: 220, cooldown: 6.3, color: "#c084fc" },
+                { key: "V", name: "Meteor", type: "meteor", damage: 54, radius: 70, cooldown: 9.2, color: "#f59e0b" }
+            ]},
+            ranger: { name: "Ranger", color: "#86efac", speed: 3.8, hp: 125, damage: 17, skills: [
+                { key: "Z", name: "Rapid Shot", type: "projectile", damage: 25, speed: 9, radius: 10, cooldown: 2.7, color: "#4ade80" },
+                { key: "X", name: "Piercing Arrow", type: "projectile", damage: 33, speed: 9.5, radius: 12, cooldown: 4.2, color: "#86efac" },
+                { key: "C", name: "Snare Trap", type: "aoe", damage: 29, radius: 120, cooldown: 5.7, color: "#facc15" },
+                { key: "V", name: "Rain of Arrows", type: "rain", damage: 40, radius: 72, cooldown: 8.5, color: "#34d399" }
+            ]},
+            rogue: { name: "Rogue", color: "#c4b5fd", speed: 4.2, hp: 110, damage: 19, skills: [
+                { key: "Z", name: "Shadow Slash", type: "melee", damage: 27, range: 110, radius: 52, cooldown: 2.5, color: "#c084fc" },
+                { key: "X", name: "Blink Step", type: "dash", damage: 18, range: 110, cooldown: 4.5, color: "#a78bfa" },
+                { key: "C", name: "Poison Dart", type: "projectile", damage: 30, speed: 8.8, radius: 11, cooldown: 4.5, color: "#4ade80" },
+                { key: "V", name: "Night Burst", type: "aoe", damage: 45, radius: 125, cooldown: 8.3, color: "#f472b6" }
+            ]}
+        };
+
+        const keyState = {};
+        let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
+        let player = null, enemies = [], projectiles = [], xpOrbs = [], effects = [];
+        let state = { selectedClass: "knight", selectedDifficulty: "normal", currentWave: 1, waveTransition: false, waveTimer: 0, gameOver: false };
+
+        function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+        function normalize(x, y) { const len = Math.hypot(x, y) || 1; return { x: x / len, y: y / len }; }
+        function distance(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+        function randRange(min, max) { return Math.random() * (max - min) + min; }
+
+        function selectDifficulty(difficulty) {
+            state.selectedDifficulty = difficulty;
+            difficultyScreen.classList.add("hidden");
+            gameScreen.classList.remove("hidden");
+            diffValue.textContent = difficultySettings[difficulty].label;
+            startGame();
+        }
+
+        function setSelectedJob(jobId) {
+            state.selectedClass = jobId;
+            document.querySelectorAll(".job-card").forEach(b => b.classList.toggle("selected", b.dataset.job === jobId));
+            startGame();
+        }
+
+        function startGame() {
+            const base = jobs[state.selectedClass];
+            const diff = difficultySettings[state.selectedDifficulty];
+
+            player = {
+                x: canvas.width / 2, y: canvas.height / 2, radius: 18, speed: base.speed, color: base.color,
+                hp: base.hp * diff.hpMul, maxHp: base.hp * diff.hpMul, damage: base.damage,
+                facing: { x: 1, y: 0 }, attackCooldown: 0, dashCooldown: 0, dashTimer: 0, dashVector: { x: 0, y: 0 },
+                lastMove: { x: 1, y: 0 }, dashHold: 0, lastDashDir: null, xpBank: 0,
+                skillLevels: { Z: 0, X: 0, C: 0, V: 0 }, skills: base.skills.map(s => ({ ...s, cooldownLeft: 0 }))
+            };
+
+            enemies = []; projectiles = []; xpOrbs = []; effects = [];
+            state.currentWave = 1; state.waveTransition = false; state.waveTimer = 0; state.gameOver = false;
+            overlay.classList.add("hidden");
+            spawnWave();
+            updateHud();
+        }
+
+        function updateHud() {
+            const job = jobs[state.selectedClass];
+            waveValue.textContent = String(state.currentWave);
+            hpValue.textContent = `${Math.ceil(player.hp)} / ${Math.ceil(player.maxHp)}`;
+            xpValue.textContent = String(player.xpBank);
+            bankValue.textContent = String(player.xpBank);
+            skillLevelValue.textContent = String(Object.values(player.skillLevels).reduce((a, b) => a + b, 0));
+
+            skillShop.innerHTML = "";
+            player.skills.forEach(skill => {
+                const btn = document.createElement("button");
+                const level = player.skillLevels[skill.key] || 0;
+                const cost = 20 + level * 18;
+                btn.className = "skill-btn";
+                btn.textContent = `${skill.key} ${skill.name} Lv.${level} (${cost})`;
+                btn.disabled = player.xpBank < cost && !state.gameOver;
+                btn.addEventListener("click", () => buySkillUpgrade(skill.key));
+                skillShop.appendChild(btn);
+            });
+        }
+
+        function buySkillUpgrade(key) {
+            const skill = player.skills.find(s => s.key === key);
+            if (!skill) return;
+            const level = player.skillLevels[key] || 0;
+            const cost = 20 + level * 18;
+            if (player.xpBank < cost) return;
+            player.xpBank -= cost;
+            player.skillLevels[key] = level + 1;
+            updateHud();
+        }
+
+        function buyUpgrade(type) {
+            const costs = { hp: 25, damage: 28, speed: 24 };
+            const cost = costs[type];
+            if (player.xpBank < cost) return;
+            player.xpBank -= cost;
+            if (type === "hp") { player.maxHp += 18; player.hp = player.maxHp; }
+            else if (type === "damage") { player.damage += 4; }
+            else if (type === "speed") { player.speed += 0.28; }
+            updateHud();
+        }
+
+        document.querySelectorAll(".difficulty-btn").forEach(b => b.addEventListener("click", () => selectDifficulty(b.dataset.difficulty)));
+        document.querySelectorAll(".upgrade-btn").forEach(b => b.addEventListener("click", () => buyUpgrade(b.dataset.upgrade)));
+        document.querySelectorAll(".job-card").forEach(b => b.addEventListener("click", () => setSelectedJob(b.dataset.job)));
+
+        window.addEventListener("keydown", (event) => {
+            const key = event.key.toLowerCase();
+            if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) event.preventDefault();
+            if (["z", "x", "c", "v", " "].includes(key) || event.code === "Space") event.preventDefault();
+            if (event.code === "Space") { keyState["space"] = true; if (!state.gameOver) attack(); return; }
+            if (["z", "x", "c", "v"].includes(key)) { keyState[key] = true; if (!state.gameOver) useSkill(key.toUpperCase()); return; }
+            if (key === "arrowup") keyState.arrowup = true;
+            if (key === "arrowdown") keyState.arrowdown = true;
+            if (key === "arrowleft") keyState.arrowleft = true;
+            if (key === "arrowright") keyState.arrowright = true;
+            if (key === "w") keyState.w = true;
+            if (key === "a") keyState.a = true;
+            if (key === "s") keyState.s = true;
+            if (key === "d") keyState.d = true;
+            if (event.key.toLowerCase() === "r" && state.gameOver) { difficultyScreen.classList.remove("hidden"); gameScreen.classList.add("hidden"); }
+        });
+
+        window.addEventListener("keyup", (event) => {
+            const key = event.key.toLowerCase();
+            if (event.code === "Space") { keyState["space"] = false; return; }
+            ["z", "x", "c", "v", "arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].forEach(k => { if (key === k) keyState[k] = false; });
+        });
+
+        canvas.addEventListener("mousemove", (event) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = ((event.clientX - rect.left) / rect.width) * canvas.width;
+            mouseY = ((event.clientY - rect.top) / rect.height) * canvas.height;
+        });
+
+        function attack() {
+            if (!player || state.gameOver) return;
+            if (player.attackCooldown > 0) return;
+            player.attackCooldown = 0.38;
+            const angle = Math.atan2(mouseY - player.y, mouseX - player.x) || 0;
+            const centerX = player.x + Math.cos(angle) * 95 * 0.7;
+            const centerY = player.y + Math.sin(angle) * 95 * 0.7;
+            effects.push({ type: "slash", x: centerX, y: centerY, radius: 62, color: "rgba(255,255,255,0.25)", life: 0.12, angle });
+            enemies.forEach(enemy => { if (distance(enemy.x, enemy.y, centerX, centerY) < enemy.radius + 28) damageEnemy(enemy, player.damage, 0.5, angle); });
+        }
+
+        function useSkill(key) {
+            if (!player || state.gameOver) return;
+            const skill = player.skills.find(s => s.key === key);
+            if (!skill || skill.cooldownLeft > 0) return;
+            const level = player.skillLevels[key] || 0;
+            const damage = skill.damage + level * 6;
+            const angle = Math.atan2(mouseY - player.y, mouseX - player.x) || 0;
+
+            if (skill.type === "melee") {
+                const centerX = player.x + Math.cos(angle) * skill.range * 0.7;
+                const centerY = player.y + Math.sin(angle) * skill.range * 0.7;
+                effects.push({ type: "ring", x: centerX, y: centerY, radius: skill.radius, color: skill.color, life: 0.22 });
+                enemies.forEach(enemy => { if (distance(enemy.x, enemy.y, centerX, centerY) < enemy.radius + skill.radius) damageEnemy(enemy, damage, 0.6, angle); });
+            } else if (skill.type === "projectile") {
+                const dir = normalize(mouseX - player.x, mouseY - player.y);
+                projectiles.push({ x: player.x, y: player.y, dx: dir.x, dy: dir.y, radius: skill.radius, speed: skill.speed + level * 0.6, damage, life: 2.4, color: skill.color });
+            } else if (skill.type === "aoe") {
+                effects.push({ type: "burst", x: player.x, y: player.y, radius: skill.radius, color: skill.color, life: 0.35 });
+                enemies.forEach(enemy => { if (distance(enemy.x, enemy.y, player.x, player.y) < skill.radius + enemy.radius) damageEnemy(enemy, damage, 0.8, angle); });
+            } else if (skill.type === "dash") {
+                const dir = normalize(mouseX - player.x, mouseY - player.y);
+                player.dashCooldown = 1.7; player.dashTimer = 0.18; player.dashVector = { x: dir.x * 10, y: dir.y * 10 };
+                player.x += dir.x * 30; player.y += dir.y * 30;
+                player.x = clamp(player.x, 18, canvas.width - 18);
+                player.y = clamp(player.y, 18, canvas.height - 18);
+            }
+            skill.cooldownLeft = skill.cooldown * (1 - Math.min(level * 0.06, 0.28));
+            updateHud();
+        }
+
+        function damageEnemy(enemy, amount, knockbackValue, direction) {
+            enemy.hp -= amount;
+            enemy.hitFlash = 0.12;
+            enemy.knockbackX = Math.cos(direction) * knockbackValue * 9;
+            enemy.knockbackY = Math.sin(direction) * knockbackValue * 9;
+            if (enemy.hp <= 0) killEnemy(enemy);
+        }
+
+        function killEnemy(enemy) {
+            enemies = enemies.filter(e => e !== enemy);
+            xpOrbs.push({ x: enemy.x, y: enemy.y, radius: 7, amount: enemy.xpValue, life: 8 });
+            if (enemies.length === 0 && !state.waveTransition) { state.waveTransition = true; state.waveTimer = 0.8; }
+        }
+
+        function spawnEnemy(type = "normal", waveLevel = state.currentWave) {
+            const side = Math.floor(Math.random() * 4);
+            let x = 0, y = 0;
+            if (side === 0) { x = randRange(0, canvas.width); y = -30; }
+            else if (side === 1) { x = canvas.width + 30; y = randRange(0, canvas.height); }
+            else if (side === 2) { x = randRange(0, canvas.width); y = canvas.height + 30; }
+            else { x = -30; y = randRange(0, canvas.height); }
+
+            const isBoss = type === "boss";
+            const isElite = type === "elite";
+            const diff = difficultySettings[state.selectedDifficulty];
+            const baseHp = isBoss ? 280 + waveLevel * 72 : isElite ? 110 + waveLevel * 18 : 40 + waveLevel * 10;
+            const speed = isBoss ? 1.25 + waveLevel * 0.06 : isElite ? 1.7 + waveLevel * 0.08 : 1.15 + waveLevel * 0.08;
+            const dmg = isBoss ? 16 + waveLevel * 2 : isElite ? 10 + waveLevel : 6 + waveLevel;
+            const radius = isBoss ? 28 : isElite ? 18 : 14;
+            const xpValue = isBoss ? 80 + waveLevel * 24 : isElite ? 28 + waveLevel * 6 : 12 + waveLevel * 4;
+
+            enemies.push({ x, y, radius, hp: baseHp * diff.hpMul, maxHp: baseHp * diff.hpMul, speed: speed * diff.speedMul, damage: dmg * diff.damageMul, xpValue, color: isBoss ? "#f97316" : isElite ? "#e879f9" : "#ef4444", hitFlash: 0, attackCooldown: randRange(0.6, 1.3), knockbackX: 0, knockbackY: 0 });
+        }
+
+        function spawnWave() {
+            const bossWave = state.currentWave % 4 === 0;
+            const diff = difficultySettings[state.selectedDifficulty];
+            const baseCount = bossWave ? 1 : 4 + state.currentWave * 2;
+            const enemyCount = Math.floor(baseCount * diff.enemyCount);
+            for (let i = 0; i < enemyCount; i += 1) {
+                const type = bossWave ? "boss" : i % 5 === 0 ? "elite" : "normal";
+                spawnEnemy(type, state.currentWave);
+            }
+        }
+
+        function nextWave() { state.currentWave += 1; state.waveTransition = false; spawnWave(); updateHud(); }
+
+        function updatePlayer(dt) {
+            if (!player || state.gameOver) return;
+            const moveX = (keyState.d || keyState.arrowright ? 1 : 0) - (keyState.a || keyState.arrowleft ? 1 : 0);
+            const moveY = (keyState.s || keyState.arrowdown ? 1 : 0) - (keyState.w || keyState.arrowup ? 1 : 0);
+
+            if (moveX || moveY) {
+                const dir = normalize(moveX, moveY);
+                if (player.lastDashDir && Math.abs(dir.x - player.lastDashDir.x) < 0.02 && Math.abs(dir.y - player.lastDashDir.y) < 0.02) {
+                    player.dashHold += dt;
+                } else { player.lastDashDir = dir; player.dashHold = 0; }
+                if (player.dashHold > 0.2 && player.dashCooldown <= 0) { player.dashCooldown = 1.7; player.dashTimer = 0.2; player.dashVector = { x: dir.x * 17, y: dir.y * 17 }; player.dashHold = 0; }
+                player.lastMove = { x: dir.x, y: dir.y }; player.facing = { x: dir.x, y: dir.y };
+            } else { player.dashHold = 0; player.lastDashDir = null; }
+
+            if (player.dashTimer > 0) { player.x += player.dashVector.x * dt * 60; player.y += player.dashVector.y * dt * 60; player.dashTimer -= dt; }
+            else { player.x += moveX * player.speed * dt * 60; player.y += moveY * player.speed * dt * 60; }
+
+            player.x = clamp(player.x, player.radius, canvas.width - player.radius);
+            player.y = clamp(player.y, player.radius, canvas.height - player.radius);
+            if (player.attackCooldown > 0) player.attackCooldown -= dt;
+            if (player.dashCooldown > 0) player.dashCooldown -= dt;
+            const lookDir = normalize(mouseX - player.x, mouseY - player.y);
+            player.facing = { x: lookDir.x, y: lookDir.y };
+            player.skills.forEach(skill => { if (skill.cooldownLeft > 0) skill.cooldownLeft -= dt; });
+        }
+
+        function updateEnemies(dt) {
+            enemies.forEach(enemy => {
+                enemy.hitFlash = Math.max(0, enemy.hitFlash - dt);
+                enemy.attackCooldown -= dt;
+                enemy.knockbackX *= 0.9; enemy.knockbackY *= 0.9;
+                const dx = player.x - enemy.x, dy = player.y - enemy.y;
+                const dist = Math.hypot(dx, dy) || 1;
+                const nx = dx / dist, ny = dy / dist;
+                enemy.x += (nx * enemy.speed * 60 * dt) + enemy.knockbackX;
+                enemy.y += (ny * enemy.speed * 60 * dt) + enemy.knockbackY;
+                if (dist < enemy.radius + player.radius + 6 && enemy.attackCooldown <= 0) {
+                    player.hp -= enemy.damage;
+                    enemy.attackCooldown = 0.9;
+                    if (player.hp <= 0) { player.hp = 0; state.gameOver = true; overlay.classList.remove("hidden"); }
+                }
+            });
+        }
+
+        function updateProjectiles(dt) {
+            projectiles.forEach(projectile => {
+                projectile.x += projectile.dx * projectile.speed * 60 * dt;
+                projectile.y += projectile.dy * projectile.speed * 60 * dt;
+                projectile.life -= dt;
+                enemies.forEach(enemy => {
+                    if (distance(projectile.x, projectile.y, enemy.x, enemy.y) < projectile.radius + enemy.radius) {
+                        damageEnemy(enemy, projectile.damage, 0.8, Math.atan2(projectile.dy, projectile.dx));
+                        projectile.life = 0;
+                    }
+                });
+            });
+            projectiles = projectiles.filter(p => p.life > 0 && p.x > -50 && p.x < canvas.width + 50 && p.y > -50 && p.y < canvas.height + 50);
+        }
+
+        function updateXP(dt) {
+            xpOrbs.forEach(orb => {
+                orb.life -= dt;
+                const dist = distance(orb.x, orb.y, player.x, player.y);
+                if (dist < 28) { player.xpBank += orb.amount; orb.life = -1; }
+            });
+            xpOrbs = xpOrbs.filter(o => o.life > 0);
+        }
+
+        function updateEffects(dt) { effects.forEach(e => { e.life -= dt; }); effects = effects.filter(e => e.life > 0); }
+
+        function updateState(dt) {
+            if (state.gameOver) return;
+            updatePlayer(dt); updateEnemies(dt); updateProjectiles(dt); updateXP(dt); updateEffects(dt);
+            if (state.waveTransition) { state.waveTimer -= dt; if (state.waveTimer <= 0) nextWave(); }
+            if (player.hp > player.maxHp) player.hp = player.maxHp;
+            updateHud();
+        }
+
+        function drawBackground() {
+            ctx.fillStyle = "#0b1020"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "rgba(148, 163, 184, 0.12)"; ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            for (let y = 0; y < canvas.height; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+        }
+
+        function drawPlayer() {
+            ctx.fillStyle = player.color; ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2); ctx.fill();
+            const aimX = player.x + player.facing.x * 22, aimY = player.y + player.facing.y * 22;
+            ctx.strokeStyle = "#f8fafc"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(aimX, aimY); ctx.stroke();
+            const barWidth = 50, hpRatio = clamp(player.hp / player.maxHp, 0, 1);
+            ctx.fillStyle = "rgba(15, 23, 42, 0.8)"; ctx.fillRect(player.x - barWidth / 2, player.y - 34, barWidth, 6);
+            ctx.fillStyle = "#34d399"; ctx.fillRect(player.x - barWidth / 2, player.y - 34, barWidth * hpRatio, 6);
+        }
+
+        function drawEnemy(enemy) {
+            ctx.fillStyle = enemy.hitFlash > 0 ? "#fff" : enemy.color;
+            ctx.beginPath(); ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2); ctx.fill();
+            const hpRatio = clamp(enemy.hp / enemy.maxHp, 0, 1);
+            ctx.fillStyle = "rgba(15, 23, 42, 0.8)"; ctx.fillRect(enemy.x - 24, enemy.y - enemy.radius - 12, 48, 5);
+            ctx.fillStyle = "#fbbf24"; ctx.fillRect(enemy.x - 24, enemy.y - enemy.radius - 12, 48 * hpRatio, 5);
+        }
+
+        function drawProjectiles() {
+            projectiles.forEach(p => { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); });
+        }
+
+        function drawXP() {
+            xpOrbs.forEach(o => {
+                ctx.fillStyle = "#a7f3d0"; ctx.beginPath(); ctx.arc(o.x, o.y, o.radius, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#134e4a"; ctx.font = "11px sans-serif"; ctx.fillText("+" + o.amount, o.x - 8, o.y + 4);
+            });
+        }
+
+        function drawEffects() {
+            effects.forEach(e => {
+                ctx.fillStyle = e.color; ctx.strokeStyle = e.color;
+                if (e.type === "slash" || e.type === "ring" || e.type === "burst") {
+                    ctx.beginPath(); ctx.arc(e.x, e.y, e.radius * (1.0 - e.life * 1.2), 0, Math.PI * 2); ctx.fill();
+                }
+                if (e.type === "beam") {
+                    ctx.beginPath(); ctx.moveTo(player.x, player.y);
+                    ctx.lineTo(player.x + Math.cos(e.angle) * 220, player.y + Math.sin(e.angle) * 220); ctx.stroke();
+                }
+                if (e.type === "meteor" || e.type === "spark") {
+                    ctx.beginPath(); ctx.arc(e.x, e.y, e.radius * (1.0 - e.life * (e.type === "meteor" ? 1.4 : 1.3)), 0, Math.PI * 2); ctx.fill();
+                }
+            });
+        }
+
+        function drawWaveText() {
+            ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = "bold 36px sans-serif"; ctx.textAlign = "center";
+            ctx.fillText(`Wave ${state.currentWave}`, canvas.width / 2, 42); ctx.textAlign = "left";
+        }
+
+        function render() {
+            drawBackground(); drawXP(); drawProjectiles(); drawEffects(); enemies.forEach(drawEnemy); drawPlayer(); drawWaveText();
+        }
+
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.033);
+            lastTime = timestamp;
+            updateState(dt);
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
