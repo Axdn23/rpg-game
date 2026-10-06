@@ -3,116 +3,610 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wavebreaker RPG</title>
+    <title>⚔️ Wavebreaker RPG - 웨이브 브레이커</title>
     <style>
-        * { box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         :root {
-            --bg-1: #0f172a; --bg-2: #111827; --panel: rgba(15, 23, 42, 0.86);
-            --panel-bright: rgba(30, 41, 59, 0.95); --line: rgba(148, 163, 184, 0.28);
-            --text: #e2e8f0; --muted: #94a3b8; --accent: #7dd3fc; --gold: #fbbf24;
-            --danger: #f87171; --success: #34d399;
+            --primary: #7c3aed;
+            --primary-dark: #5b21b6;
+            --secondary: #06b6d4;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f97316;
+            --bg-dark: #0f172a;
+            --bg-darker: #020617;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border: #334155;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            --glow: 0 0 30px;
         }
+
         html, body {
-            margin: 0; width: 100%; min-height: 100vh;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at top, #162032 0%, #0b1120 45%, #070d18 100%);
-            color: var(--text);
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+            color: var(--text-primary);
+            overflow: hidden;
         }
-        body { display: flex; flex-direction: column; align-items: center; padding: 18px 20px 32px; }
-        .difficulty-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.95); z-index: 1000; }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .difficulty-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            animation: fadeIn 0.6s ease-out;
+        }
+
         .difficulty-screen.hidden { display: none; }
-        .difficulty-card { background: rgba(15, 23, 42, 0.98); border: 1px solid var(--line); border-radius: 24px; padding: 48px 56px; text-align: center; max-width: 600px; box-shadow: 0 20px 60px rgba(2, 6, 23, 0.7); }
-        .difficulty-card h1 { margin: 0 0 32px; font-size: 2.5rem; color: var(--accent); }
-        .difficulty-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .difficulty-btn { border: 2px solid var(--line); background: rgba(15, 23, 42, 0.9); color: var(--text); padding: 20px 16px; border-radius: 12px; cursor: pointer; transition: 0.3s ease; font-size: 1rem; }
-        .difficulty-btn:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.2); }
-        .difficulty-btn .diff-title { display: block; font-weight: 700; font-size: 1.2rem; margin-bottom: 8px; }
-        .difficulty-btn small { display: block; color: var(--muted); font-size: 0.85rem; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .difficulty-container {
+            text-align: center;
+            max-width: 700px;
+            width: 90%;
+        }
+
+        .difficulty-header {
+            margin-bottom: 40px;
+        }
+
+        .difficulty-header h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .difficulty-header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .difficulty-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .difficulty-card {
+            padding: 30px 20px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .difficulty-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .difficulty-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--secondary);
+            box-shadow: var(--glow) var(--secondary);
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
+        }
+
+        .difficulty-card:hover::before { opacity: 1; }
+
+        .difficulty-emoji {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+            animation: bounce 2s infinite;
+        }
+
+        .difficulty-card:hover .difficulty-emoji {
+            animation: bounce 0.6s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .difficulty-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .difficulty-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .difficulty-card[data-difficulty="easy"] { border-color: #10b981; }
+        .difficulty-card[data-difficulty="easy"]:hover { box-shadow: var(--glow) #10b981; }
+
+        .difficulty-card[data-difficulty="normal"] { border-color: var(--accent); }
+        .difficulty-card[data-difficulty="normal"]:hover { box-shadow: var(--glow) var(--accent); }
+
+        .difficulty-card[data-difficulty="hard"] { border-color: var(--danger); }
+        .difficulty-card[data-difficulty="hard"]:hover { box-shadow: var(--glow) var(--danger); }
+
+        .difficulty-card[data-difficulty="extreme"] { border-color: #a855f7; }
+        .difficulty-card[data-difficulty="extreme"]:hover { box-shadow: var(--glow) #a855f7; }
+
+        .game-screen {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 15px;
+        }
+
         .game-screen.hidden { display: none; }
-        .top-bar { width: min(1480px, 100%); display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 14px; }
-        .job-selection { display: flex; flex-wrap: wrap; gap: 10px; }
-        .job-card { border: 1px solid var(--line); background: rgba(15, 23, 42, 0.9); color: var(--text); padding: 10px 18px; border-radius: 12px; min-width: 120px; cursor: pointer; transition: 0.2s ease; }
-        .job-card:hover, .job-card.selected { transform: translateY(-1px); border-color: rgba(125, 211, 252, 0.7); box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.3); }
-        .job-card span { display: block; font-size: 1rem; font-weight: 700; }
-        .job-card small { color: var(--muted); }
-        .status-panel { display: flex; flex-wrap: wrap; gap: 14px; justify-content: flex-end; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; }
-        .status-panel div { display: flex; flex-direction: column; min-width: 110px; color: var(--muted); font-size: 0.82rem; }
-        .status-panel strong { color: var(--text); font-size: 1rem; }
-        .game-layout { width: min(1480px, 100%); display: flex; align-items: flex-start; gap: 18px; }
-        #gameCanvas { width: min(100%, 1280px); height: auto; background: linear-gradient(180deg, rgba(13, 19, 32, 0.96), rgba(15, 23, 42, 0.96)); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 24px 50px rgba(15, 23, 42, 0.45); }
-        .shop-panel { width: 280px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px 16px; max-height: 640px; overflow-y: auto; }
-        .shop-panel h3 { margin: 0 0 14px; font-size: 1.3rem; }
-        .shop-metrics { display: grid; gap: 8px; margin-bottom: 18px; color: var(--muted); }
-        .upgrade-list, .skill-shop { display: grid; gap: 10px; }
-        .upgrade-btn, .skill-btn { appearance: none; width: 100%; border: 1px solid var(--line); background: var(--panel-bright); color: var(--text); padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s ease; font-size: 0.9rem; }
-        .upgrade-btn:hover, .skill-btn:hover { border-color: rgba(52, 211, 153, 0.7); box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.2); }
-        .upgrade-btn:disabled, .skill-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-        .controls-bar { width: min(1480px, 100%); margin-top: 18px; display: flex; flex-wrap: wrap; gap: 18px; padding: 14px 18px; border: 1px solid var(--line); background: rgba(15, 23, 42, 0.78); border-radius: 12px; color: var(--muted); font-size: 0.9rem; }
-        .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.65); z-index: 100; }
+
+        .top-panel {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .job-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .job-btn {
+            padding: 10px 16px;
+            border: 2px solid var(--border);
+            background: rgba(30, 41, 59, 0.6);
+            color: var(--text-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+
+        .job-btn:hover {
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .job-btn.active {
+            border-color: var(--secondary);
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.3) 0%, rgba(6, 182, 212, 0.1) 100%);
+            box-shadow: var(--glow) var(--secondary);
+        }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .status-item {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .status-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .game-container {
+            display: flex;
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0a0e27 0%, #16213e 100%);
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .side-panel {
+            width: 280px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .upgrade-section,
+        .skill-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .upgrade-btn,
+        .skill-btn {
+            padding: 12px;
+            border: 2px solid var(--border);
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            text-align: left;
+        }
+
+        .upgrade-btn:hover:not(:disabled),
+        .skill-btn:hover:not(:disabled) {
+            border-color: var(--success);
+            transform: translateX(4px);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%);
+            box-shadow: var(--glow) var(--success);
+        }
+
+        .upgrade-btn:disabled,
+        .skill-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: var(--border);
+        }
+
+        .controls-panel {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-key {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            min-width: 50px;
+            text-align: center;
+            box-shadow: var(--glow) var(--primary);
+        }
+
+        .control-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 6, 23, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+        }
+
         .overlay.hidden { display: none; }
-        .overlay-card { background: rgba(15, 23, 42, 0.95); border: 1px solid var(--line); border-radius: 18px; padding: 28px 36px; text-align: center; box-shadow: 0 20px 40px rgba(2, 6, 23, 0.5); }
-        .overlay-card h2 { margin: 0 0 8px; color: var(--danger); }
-        .overlay-card p { margin: 0; color: var(--text); }
-        @media (max-width: 1200px) { .game-layout { flex-direction: column; } .shop-panel { width: 100%; } }
+
+        .game-over-card {
+            text-align: center;
+            animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .game-over-card h1 {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 20px;
+            font-weight: 900;
+            text-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .game-over-stats {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            font-size: 1.1rem;
+        }
+
+        .stat-line strong {
+            color: var(--secondary);
+        }
+
+        .game-over-action {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .side-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .side-panel::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 4px;
+        }
+
+        .side-panel::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 4px;
+        }
+
+        .side-panel::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        @media (max-width: 1400px) {
+            .game-container { flex-direction: column; }
+            .side-panel { width: 100%; height: 200px; }
+            .status-bar { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .game-screen { padding: 10px; gap: 10px; }
+            .top-panel { grid-template-columns: 1fr; }
+            .controls-panel { grid-template-columns: repeat(2, 1fr); font-size: 0.85rem; }
+            .difficulty-header h1 { font-size: 2.5rem; }
+            .difficulty-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        }
     </style>
 </head>
 <body>
     <div id="difficultyScreen" class="difficulty-screen">
-        <div class="difficulty-card">
-            <h1>난이도 선택</h1>
-            <div class="difficulty-buttons">
-                <button class="difficulty-btn" data-difficulty="easy"><span class="diff-title">🟢 쉬움</span><small>적이 약하고 천천히</small></button>
-                <button class="difficulty-btn" data-difficulty="normal"><span class="diff-title">🟡 보통</span><small>균형잡힌 난이도</small></button>
-                <button class="difficulty-btn" data-difficulty="hard"><span class="diff-title">🔴 어려움</span><small>적이 강하고 빠름</small></button>
-                <button class="difficulty-btn" data-difficulty="extreme"><span class="diff-title">⚫ 매우어려움</span><small>극도의 도전</small></button>
+        <div class="difficulty-container">
+            <div class="difficulty-header">
+                <h1>⚔️ WAVEBREAKER</h1>
+                <p>난이도를 선택하고 게임을 시작하세요</p>
+            </div>
+            <div class="difficulty-grid">
+                <div class="difficulty-card" data-difficulty="easy">
+                    <span class="difficulty-emoji">🟢</span>
+                    <div class="difficulty-title">Easy</div>
+                    <div class="difficulty-desc">약한 적들<br>천천한 난이도</div>
+                </div>
+                <div class="difficulty-card" data-difficulty="normal">
+                    <span class="difficulty-emoji">🟡</span>
+                    <div class="difficulty-title">Normal</div>
+                    <div class="difficulty-desc">균형잡힌<br>난이도</div>
+                </div>
+                <div class="difficulty-card" data-difficulty="hard">
+                    <span class="difficulty-emoji">🔴</span>
+                    <div class="difficulty-title">Hard</div>
+                    <div class="difficulty-desc">강한 적들<br>빠른 난이도</div>
+                </div>
+                <div class="difficulty-card" data-difficulty="extreme">
+                    <span class="difficulty-emoji">⚫</span>
+                    <div class="difficulty-title">Extreme</div>
+                    <div class="difficulty-desc">극도의<br>도전</div>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="gameScreen" class="game-screen hidden">
-        <div class="top-bar">
-            <div class="job-selection">
-                <button class="job-card selected" data-job="knight"><span class="job-name">Knight</span><small>전사</small></button>
-                <button class="job-card" data-job="mage"><span class="job-name">Mage</span><small>마법사</small></button>
-                <button class="job-card" data-job="ranger"><span class="job-name">Ranger</span><small>궁수</small></button>
-                <button class="job-card" data-job="rogue"><span class="job-name">Rogue</span><small>도적</small></button>
+        <div class="top-panel">
+            <div class="job-selector">
+                <button class="job-btn active" data-job="knight">🗡️ Knight</button>
+                <button class="job-btn" data-job="mage">🔮 Mage</button>
+                <button class="job-btn" data-job="ranger">🏹 Ranger</button>
+                <button class="job-btn" data-job="rogue">🗡️ Rogue</button>
             </div>
-            <div class="status-panel">
-                <div><span>웨이브</span><strong id="waveValue">1</strong></div>
-                <div><span>체력</span><strong id="hpValue">0 / 0</strong></div>
-                <div><span>경험치</span><strong id="xpValue">0</strong></div>
-                <div><span>난이도</span><strong id="diffValue">보통</strong></div>
+            <div style="text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--accent);">
+                🌊 Wave <span id="waveDisplay">1</span>
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-label">❤️ 체력</div>
+                    <div class="status-value" id="hpDisplay">100/100</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">⭐ 경험치</div>
+                    <div class="status-value" id="xpDisplay">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">🎯 난이도</div>
+                    <div class="status-value" id="diffDisplay">Normal</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">👤 직업</div>
+                    <div class="status-value" id="jobDisplay">Knight</div>
+                </div>
             </div>
         </div>
 
-        <div class="game-layout">
-            <canvas id="gameCanvas" width="1280" height="720"></canvas>
-            <aside class="shop-panel">
-                <h3>경험치 상점</h3>
-                <div class="shop-metrics">
-                    <div>보유 XP: <strong id="bankValue">0</strong></div>
-                    <div>스킬 레벨: <strong id="skillLevelValue">0</strong></div>
+        <div class="game-container">
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas" width="1280" height="720"></canvas>
+            </div>
+            <div class="side-panel">
+                <div>
+                    <div class="panel-title">📊 상태</div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">보유 XP</div>
+                            <div class="stat-value" id="bankDisplay">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">스킬 레벨</div>
+                            <div class="stat-value" id="skillLevelDisplay">0</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="upgrade-list">
-                    <button class="upgrade-btn" data-upgrade="hp">체력 증가</button>
-                    <button class="upgrade-btn" data-upgrade="damage">공격력 증가</button>
-                    <button class="upgrade-btn" data-upgrade="speed">이동 속도 증가</button>
+                <div class="upgrade-section">
+                    <div class="panel-title">⬆️ 업그레이드</div>
+                    <button class="upgrade-btn" data-upgrade="hp">❤️ 체력 증가</button>
+                    <button class="upgrade-btn" data-upgrade="damage">⚔️ 공격력 증가</button>
+                    <button class="upgrade-btn" data-upgrade="speed">💨 이동 속도</button>
                 </div>
-                <div id="skillShop" class="skill-shop"></div>
-            </aside>
+                <div class="skill-section">
+                    <div class="panel-title">✨ 스킬 강화</div>
+                    <div id="skillShop"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="controls-bar">
-            <div><strong>기본 공격</strong>: Space</div>
-            <div><strong>스킬</strong>: Z / X / C / V</div>
-            <div><strong>이동</strong>: WASD / 방향키</div>
-            <div><strong>대시</strong>: 한 방향 연타</div>
+        <div class="controls-panel">
+            <div class="control-item">
+                <div class="control-key">SPACE</div>
+                <div class="control-desc">기본 공격</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">Z X C V</div>
+                <div class="control-desc">스킬 사용</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">WASD</div>
+                <div class="control-desc">캐릭터 이동</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">연타</div>
+                <div class="control-desc">방향 연타로 대시</div>
+            </div>
         </div>
+    </div>
 
-        <div id="overlay" class="overlay hidden">
-            <div class="overlay-card">
-                <h2>게임 오버</h2>
-                <p>R 키를 눌러 난이도 선택으로 돌아가세요</p>
+    <div id="overlay" class="overlay hidden">
+        <div class="game-over-card">
+            <h1>🎮 GAME OVER</h1>
+            <div class="game-over-stats">
+                <div class="stat-line">
+                    <span>도달한 웨이브:</span>
+                    <strong id="finalWave">1</strong>
+                </div>
+                <div class="stat-line">
+                    <span>획득한 경험치:</span>
+                    <strong id="finalXp">0</strong>
+                </div>
+                <div class="stat-line">
+                    <span>플레이 시간:</span>
+                    <strong id="playTime">0초</strong>
+                </div>
+            </div>
+            <div class="game-over-action">
+                💡 <strong>R 키</strong>를 눌러 다시 시작하세요
             </div>
         </div>
     </div>
@@ -122,42 +616,35 @@
         const ctx = canvas.getContext("2d");
         const difficultyScreen = document.getElementById("difficultyScreen");
         const gameScreen = document.getElementById("gameScreen");
-        const waveValue = document.getElementById("waveValue");
-        const hpValue = document.getElementById("hpValue");
-        const xpValue = document.getElementById("xpValue");
-        const diffValue = document.getElementById("diffValue");
-        const bankValue = document.getElementById("bankValue");
-        const skillLevelValue = document.getElementById("skillLevelValue");
-        const skillShop = document.getElementById("skillShop");
         const overlay = document.getElementById("overlay");
 
         const difficultySettings = {
-            easy: { label: "쉬움", hpMul: 0.6, damageMul: 0.65, speedMul: 0.75, enemyCount: 0.7 },
-            normal: { label: "보통", hpMul: 1, damageMul: 1, speedMul: 1, enemyCount: 1 },
-            hard: { label: "어려움", hpMul: 1.4, damageMul: 1.35, speedMul: 1.25, enemyCount: 1.3 },
-            extreme: { label: "매우 어려움", hpMul: 1.9, damageMul: 1.75, speedMul: 1.5, enemyCount: 1.6 }
+            easy: { label: "Easy", hpMul: 0.6, damageMul: 0.65, speedMul: 0.75, enemyCount: 0.7 },
+            normal: { label: "Normal", hpMul: 1, damageMul: 1, speedMul: 1, enemyCount: 1 },
+            hard: { label: "Hard", hpMul: 1.4, damageMul: 1.35, speedMul: 1.25, enemyCount: 1.3 },
+            extreme: { label: "Extreme", hpMul: 1.9, damageMul: 1.75, speedMul: 1.5, enemyCount: 1.6 }
         };
 
         const jobs = {
-            knight: { name: "Knight", color: "#f9c74f", speed: 3.6, hp: 150, damage: 18, skills: [
+            knight: { name: "Knight", icon: "🗡️", color: "#f9c74f", speed: 3.6, hp: 150, damage: 18, skills: [
                 { key: "Z", name: "Shield Bash", type: "melee", damage: 30, range: 120, radius: 58, cooldown: 2.8, color: "#f9c74f" },
                 { key: "X", name: "Flame Slash", type: "projectile", damage: 26, speed: 8, radius: 12, cooldown: 4.3, color: "#ff7a59" },
                 { key: "C", name: "Earth Stomp", type: "aoe", damage: 34, radius: 110, cooldown: 6.3, color: "#7dd3fc" },
                 { key: "V", name: "Blade Storm", type: "cone", damage: 42, range: 150, radius: 48, cooldown: 8.2, color: "#fbbf24" }
             ]},
-            mage: { name: "Mage", color: "#7dd3fc", speed: 3.3, hp: 120, damage: 16, skills: [
+            mage: { name: "Mage", icon: "🔮", color: "#7dd3fc", speed: 3.3, hp: 120, damage: 16, skills: [
                 { key: "Z", name: "Fireball", type: "projectile", damage: 28, speed: 8.5, radius: 12, cooldown: 3.3, color: "#fb7185" },
                 { key: "X", name: "Frost Nova", type: "aoe", damage: 31, radius: 130, cooldown: 5.5, color: "#a5b4fc" },
                 { key: "C", name: "Arcane Beam", type: "beam", damage: 36, range: 220, cooldown: 6.3, color: "#c084fc" },
                 { key: "V", name: "Meteor", type: "meteor", damage: 54, radius: 70, cooldown: 9.2, color: "#f59e0b" }
             ]},
-            ranger: { name: "Ranger", color: "#86efac", speed: 3.8, hp: 125, damage: 17, skills: [
+            ranger: { name: "Ranger", icon: "🏹", color: "#86efac", speed: 3.8, hp: 125, damage: 17, skills: [
                 { key: "Z", name: "Rapid Shot", type: "projectile", damage: 25, speed: 9, radius: 10, cooldown: 2.7, color: "#4ade80" },
                 { key: "X", name: "Piercing Arrow", type: "projectile", damage: 33, speed: 9.5, radius: 12, cooldown: 4.2, color: "#86efac" },
                 { key: "C", name: "Snare Trap", type: "aoe", damage: 29, radius: 120, cooldown: 5.7, color: "#facc15" },
                 { key: "V", name: "Rain of Arrows", type: "rain", damage: 40, radius: 72, cooldown: 8.5, color: "#34d399" }
             ]},
-            rogue: { name: "Rogue", color: "#c4b5fd", speed: 4.2, hp: 110, damage: 19, skills: [
+            rogue: { name: "Rogue", icon: "🗡️", color: "#c4b5fd", speed: 4.2, hp: 110, damage: 19, skills: [
                 { key: "Z", name: "Shadow Slash", type: "melee", damage: 27, range: 110, radius: 52, cooldown: 2.5, color: "#c084fc" },
                 { key: "X", name: "Blink Step", type: "dash", damage: 18, range: 110, cooldown: 4.5, color: "#a78bfa" },
                 { key: "C", name: "Poison Dart", type: "projectile", damage: 30, speed: 8.8, radius: 11, cooldown: 4.5, color: "#4ade80" },
@@ -168,26 +655,38 @@
         const keyState = {};
         let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
         let player = null, enemies = [], projectiles = [], xpOrbs = [], effects = [];
-        let state = { selectedClass: "knight", selectedDifficulty: "normal", currentWave: 1, waveTransition: false, waveTimer: 0, gameOver: false };
+        let state = { selectedClass: "knight", selectedDifficulty: "normal", currentWave: 1, waveTransition: false, waveTimer: 0, gameOver: false, startTime: 0 };
 
         function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
         function normalize(x, y) { const len = Math.hypot(x, y) || 1; return { x: x / len, y: y / len }; }
         function distance(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
         function randRange(min, max) { return Math.random() * (max - min) + min; }
 
-        function selectDifficulty(difficulty) {
-            state.selectedDifficulty = difficulty;
-            difficultyScreen.classList.add("hidden");
-            gameScreen.classList.remove("hidden");
-            diffValue.textContent = difficultySettings[difficulty].label;
-            startGame();
-        }
+        document.querySelectorAll(".difficulty-card").forEach(card => {
+            card.addEventListener("click", () => {
+                const difficulty = card.dataset.difficulty;
+                state.selectedDifficulty = difficulty;
+                state.startTime = Date.now();
+                difficultyScreen.classList.add("hidden");
+                gameScreen.classList.remove("hidden");
+                document.getElementById("diffDisplay").textContent = difficultySettings[difficulty].label;
+                startGame();
+            });
+        });
 
-        function setSelectedJob(jobId) {
-            state.selectedClass = jobId;
-            document.querySelectorAll(".job-card").forEach(b => b.classList.toggle("selected", b.dataset.job === jobId));
-            startGame();
-        }
+        document.querySelectorAll(".job-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".job-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                state.selectedClass = btn.dataset.job;
+                document.getElementById("jobDisplay").textContent = jobs[state.selectedClass].name;
+                startGame();
+            });
+        });
+
+        document.querySelectorAll(".upgrade-btn").forEach(btn => {
+            btn.addEventListener("click", () => buyUpgrade(btn.dataset.upgrade));
+        });
 
         function startGame() {
             const base = jobs[state.selectedClass];
@@ -210,19 +709,21 @@
 
         function updateHud() {
             const job = jobs[state.selectedClass];
-            waveValue.textContent = String(state.currentWave);
-            hpValue.textContent = `${Math.ceil(player.hp)} / ${Math.ceil(player.maxHp)}`;
-            xpValue.textContent = String(player.xpBank);
-            bankValue.textContent = String(player.xpBank);
-            skillLevelValue.textContent = String(Object.values(player.skillLevels).reduce((a, b) => a + b, 0));
+            document.getElementById("waveDisplay").textContent = state.currentWave;
+            document.getElementById("hpDisplay").textContent = `${Math.ceil(player.hp)} / ${Math.ceil(player.maxHp)}`;
+            document.getElementById("xpDisplay").textContent = player.xpBank;
+            document.getElementById("jobDisplay").textContent = job.name;
+            document.getElementById("bankDisplay").textContent = player.xpBank;
+            document.getElementById("skillLevelDisplay").textContent = Object.values(player.skillLevels).reduce((a, b) => a + b, 0);
 
+            const skillShop = document.getElementById("skillShop");
             skillShop.innerHTML = "";
             player.skills.forEach(skill => {
                 const btn = document.createElement("button");
                 const level = player.skillLevels[skill.key] || 0;
                 const cost = 20 + level * 18;
                 btn.className = "skill-btn";
-                btn.textContent = `${skill.key} ${skill.name} Lv.${level} (${cost})`;
+                btn.textContent = `${skill.key} ${skill.name} (${cost})`;
                 btn.disabled = player.xpBank < cost && !state.gameOver;
                 btn.addEventListener("click", () => buySkillUpgrade(skill.key));
                 skillShop.appendChild(btn);
@@ -251,10 +752,6 @@
             updateHud();
         }
 
-        document.querySelectorAll(".difficulty-btn").forEach(b => b.addEventListener("click", () => selectDifficulty(b.dataset.difficulty)));
-        document.querySelectorAll(".upgrade-btn").forEach(b => b.addEventListener("click", () => buyUpgrade(b.dataset.upgrade)));
-        document.querySelectorAll(".job-card").forEach(b => b.addEventListener("click", () => setSelectedJob(b.dataset.job)));
-
         window.addEventListener("keydown", (event) => {
             const key = event.key.toLowerCase();
             if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) event.preventDefault();
@@ -269,7 +766,7 @@
             if (key === "a") keyState.a = true;
             if (key === "s") keyState.s = true;
             if (key === "d") keyState.d = true;
-            if (event.key.toLowerCase() === "r" && state.gameOver) { difficultyScreen.classList.remove("hidden"); gameScreen.classList.add("hidden"); }
+            if (key === "r" && state.gameOver) { difficultyScreen.classList.remove("hidden"); gameScreen.classList.add("hidden"); }
         });
 
         window.addEventListener("keyup", (event) => {
@@ -411,7 +908,14 @@
                 if (dist < enemy.radius + player.radius + 6 && enemy.attackCooldown <= 0) {
                     player.hp -= enemy.damage;
                     enemy.attackCooldown = 0.9;
-                    if (player.hp <= 0) { player.hp = 0; state.gameOver = true; overlay.classList.remove("hidden"); }
+                    if (player.hp <= 0) {
+                        player.hp = 0; state.gameOver = true;
+                        const playTimeSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+                        document.getElementById("finalWave").textContent = state.currentWave;
+                        document.getElementById("finalXp").textContent = player.xpBank;
+                        document.getElementById("playTime").textContent = playTimeSeconds + "초";
+                        overlay.classList.remove("hidden");
+                    }
                 }
             });
         }
@@ -451,37 +955,44 @@
         }
 
         function drawBackground() {
-            ctx.fillStyle = "#0b1020"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = "rgba(148, 163, 184, 0.12)"; ctx.lineWidth = 1;
-            for (let x = 0; x < canvas.width; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
-            for (let y = 0; y < canvas.height; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+            ctx.fillStyle = "#0a0e27";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "rgba(6, 182, 212, 0.1)";
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            for (let y = 0; y < canvas.height; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
         }
 
         function drawPlayer() {
             ctx.fillStyle = player.color; ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.5)"; ctx.lineWidth = 2; ctx.stroke();
             const aimX = player.x + player.facing.x * 22, aimY = player.y + player.facing.y * 22;
-            ctx.strokeStyle = "#f8fafc"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(aimX, aimY); ctx.stroke();
+            ctx.strokeStyle = "#06b6d4"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(aimX, aimY); ctx.stroke();
             const barWidth = 50, hpRatio = clamp(player.hp / player.maxHp, 0, 1);
             ctx.fillStyle = "rgba(15, 23, 42, 0.8)"; ctx.fillRect(player.x - barWidth / 2, player.y - 34, barWidth, 6);
-            ctx.fillStyle = "#34d399"; ctx.fillRect(player.x - barWidth / 2, player.y - 34, barWidth * hpRatio, 6);
+            ctx.fillStyle = "#10b981"; ctx.fillRect(player.x - barWidth / 2, player.y - 34, barWidth * hpRatio, 6);
+            ctx.strokeStyle = "#06b6d4"; ctx.lineWidth = 1; ctx.strokeRect(player.x - barWidth / 2, player.y - 34, barWidth, 6);
         }
 
         function drawEnemy(enemy) {
             ctx.fillStyle = enemy.hitFlash > 0 ? "#fff" : enemy.color;
             ctx.beginPath(); ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)"; ctx.lineWidth = 1.5; ctx.stroke();
             const hpRatio = clamp(enemy.hp / enemy.maxHp, 0, 1);
             ctx.fillStyle = "rgba(15, 23, 42, 0.8)"; ctx.fillRect(enemy.x - 24, enemy.y - enemy.radius - 12, 48, 5);
-            ctx.fillStyle = "#fbbf24"; ctx.fillRect(enemy.x - 24, enemy.y - enemy.radius - 12, 48 * hpRatio, 5);
+            ctx.fillStyle = "#f59e0b"; ctx.fillRect(enemy.x - 24, enemy.y - enemy.radius - 12, 48 * hpRatio, 5);
+            ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1; ctx.strokeRect(enemy.x - 24, enemy.y - enemy.radius - 12, 48, 5);
         }
 
         function drawProjectiles() {
-            projectiles.forEach(p => { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); });
+            projectiles.forEach(p => { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "rgba(255, 255, 255, 0.5)"; ctx.lineWidth = 1; ctx.stroke(); });
         }
 
         function drawXP() {
             xpOrbs.forEach(o => {
-                ctx.fillStyle = "#a7f3d0"; ctx.beginPath(); ctx.arc(o.x, o.y, o.radius, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = "#134e4a"; ctx.font = "11px sans-serif"; ctx.fillText("+" + o.amount, o.x - 8, o.y + 4);
+                ctx.fillStyle = "#10b981"; ctx.beginPath(); ctx.arc(o.x, o.y, o.radius, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = "#06b6d4"; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = "#e0f2fe"; ctx.font = "bold 10px Arial"; ctx.textAlign = "center"; ctx.fillText("+" + o.amount, o.x, o.y + 3);
             });
         }
 
@@ -491,19 +1002,15 @@
                 if (e.type === "slash" || e.type === "ring" || e.type === "burst") {
                     ctx.beginPath(); ctx.arc(e.x, e.y, e.radius * (1.0 - e.life * 1.2), 0, Math.PI * 2); ctx.fill();
                 }
-                if (e.type === "beam") {
-                    ctx.beginPath(); ctx.moveTo(player.x, player.y);
-                    ctx.lineTo(player.x + Math.cos(e.angle) * 220, player.y + Math.sin(e.angle) * 220); ctx.stroke();
-                }
-                if (e.type === "meteor" || e.type === "spark") {
-                    ctx.beginPath(); ctx.arc(e.x, e.y, e.radius * (1.0 - e.life * (e.type === "meteor" ? 1.4 : 1.3)), 0, Math.PI * 2); ctx.fill();
-                }
             });
         }
 
         function drawWaveText() {
-            ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = "bold 36px sans-serif"; ctx.textAlign = "center";
-            ctx.fillText(`Wave ${state.currentWave}`, canvas.width / 2, 42); ctx.textAlign = "left";
+            ctx.fillStyle = "rgba(6, 182, 212, 0.9)"; ctx.font = "bold 48px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+            ctx.fillText(`Wave ${state.currentWave}`, canvas.width / 2, 20);
+            if (enemies.length > 0) {
+                ctx.font = "16px Arial"; ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.fillText(`남은 적: ${enemies.length}`, canvas.width / 2, 70);
+            }
         }
 
         function render() {
